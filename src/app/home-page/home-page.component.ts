@@ -103,9 +103,9 @@ export class HomePageComponent {
         let occupation_xmlContent = all_occupations.item(i).outerHTML
         let occupation_xml = new window.DOMParser().parseFromString(occupation_xmlContent, "text/xml")
         let name : any = ""
-        try {
-          name = occupation_xml.getElementsByTagName("PersonNm").item(0)?.textContent
-        } catch {
+        
+        name = occupation_xml.getElementsByTagName("PersonNm").item(0)?.textContent
+        if (name == null){
           name = occupation_xml.querySelectorAll("BusinessName > BusinessNameLine1Txt").item(0)?.textContent
         }
         
