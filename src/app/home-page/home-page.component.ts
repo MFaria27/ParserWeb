@@ -76,10 +76,27 @@ export class HomePageComponent {
       let xmlContent = res['body']
       let xml = new window.DOMParser().parseFromString(xmlContent, "text/xml");
       if ((xml.querySelectorAll("TaxPeriodEndDt").item(0) == null) && (xml.querySelectorAll("IRS990 > Form990PartVIISectionAGrp").item(0) == null)) return;
-      let company_wide_compensation = 0
-      let total_reported_employees = 0
       let end_year : any = xml.querySelectorAll("TaxPeriodEndDt").item(0).textContent?.substring(0,4)
       end_year = parseInt(end_year,10)
+
+      let company_wide_compensation = 0
+      let total_reported_employees = 0
+      let num_of_titles = {
+        "Vice President" : 0 ,
+        "Vice Provost" : 0,
+        "President" : 0, 
+        "Provost" : 0, 
+        "VP" : 0, 
+        "Trustee" : 0,
+        "Dean" : 0, 
+        "Exec" : 0, 
+        "Prof" : 0,
+        "Treas" : 0,
+        "Secretary" : 0,
+        "Chief" : 0,
+        "Dept Head" : 0,
+        "Other" : 0
+      }
       let all_occupations = xml.querySelectorAll("IRS990 > Form990PartVIISectionAGrp")
       let scrapped_occupation_data : {}[] = []
       for(let i = 0; i < all_occupations.length; i++) {
@@ -109,20 +126,66 @@ export class HomePageComponent {
         let total_comp = base_comp + other_comp
         
         if (total_comp == 0) continue;
+
+        total_reported_employees++;
+        company_wide_compensation += total_comp;
         
         let title : any = occupation_xml.getElementsByTagName("TitleTxt").item(0)?.textContent
-        
+        let title_group = this.get_title_group(title);
+        num_of_titles[title_group]++;
+
         let payload = {
-          ein       : ein,
-          year      : end_year,
-          name      : name,
-          title     : title,
-          base_comp : base_comp,
-          other_comp: other_comp,
-          total_comp: total_comp
+          ein        : ein,
+          year       : end_year,
+          name       : name,
+          title      : title,
+          title_group: title_group,
+          base_comp  : base_comp,
+          other_comp : other_comp,
+          total_comp : total_comp
         }
 
         scrapped_occupation_data.push(payload)
+      }
+
+      let pyTotalRevenue : any = xml.getElementsByTagName("PYTotalRevenueAmt").item(0)?.textContent
+      pyTotalRevenue = parseInt(pyTotalRevenue, 10)
+      let cyTotalRevenue : any = xml.getElementsByTagName("CYTotalRevenueAmt").item(0)?.textContent
+      cyTotalRevenue = parseInt(cyTotalRevenue, 10)
+      let pyNetRevenue : any = xml.getElementsByTagName("PYRevenuesLessExpensesAmt").item(0)?.textContent
+      pyNetRevenue = parseInt(pyNetRevenue, 10)
+      let cyNetRevenue : any = xml.getElementsByTagName("CYRevenuesLessExpensesAmt").item(0)?.textContent
+      cyNetRevenue = parseInt(cyNetRevenue, 10)
+      let average_comp_per_reported = 0
+      let net_over_comp_index = 0
+      try {
+        average_comp_per_reported = company_wide_compensation / total_reported_employees
+      } catch {
+        average_comp_per_reported = 0
+      }
+      try {
+        net_over_comp_index = cyNetRevenue / company_wide_compensation
+      } catch {
+        net_over_comp_index = 0
+      }
+
+      let subPayloadSummaryData = {
+        year : end_year,
+        school : this.nick,
+        revenue : cyTotalRevenue,
+        netIncome : cyNetRevenue,
+        totalEmployeeComp : company_wide_compensation,
+        averageComp : average_comp_per_reported,
+        netCompIndex : net_over_comp_index,
+        totalEmployee : total_reported_employees,
+        title_count : num_of_titles
+      }
+
+      let summaryData : {}[] = [];
+      summaryData.push(subPayloadSummaryData);
+
+      let getSummaryDataPayload = {
+        data: summaryData
       }
 
       let getOccupationInfoPayload = {
@@ -135,10 +198,10 @@ export class HomePageComponent {
       await this.httpService.postToAPI("/postOccupationInfo", getOccupationInfoPayload).toPromise()
       .then((res : any) => {
         if(res["statusCode"] == 200) {
-          console.log(res["body"]["added"] + " rows have been added to the Database")
+          console.log(res["body"]["added"] + " rows have been added to Employees")
         }
         if(res["statusCode"] == 404) {
-          console.log("All rows in batch already in database")
+          console.log("All rows in batch already in Employees")
         }
       })
       .catch(err => {
@@ -146,10 +209,53 @@ export class HomePageComponent {
         console.log(err)
       })
 
+      await this.httpService.postToAPI("/postSummaryData", getSummaryDataPayload).toPromise()
+      .then((res : any) => {
+        if(res["statusCode"] == 200) {
+          console.log(res["body"]["added"] + " rows have been added to Summary")
+        }
+        if(res["statusCode"] == 404) {
+          console.log("All rows in batch already in Summary")
+        }
+      })
+      .catch(err => {
+        console.log(getSummaryDataPayload);
+        console.log(err)
+      })
+
     })
     .catch(err => {
       console.log(err)
     })
+  }
+
+  get_title_group(title_name : string) {
+    let tg = "Other";
+    let t = title_name.toLowerCase();
+    let list_of_titles = [
+        "Vice President",
+        "Vice Provost",
+        "President", 
+        "Provost", 
+        "VP", 
+        "Trustee",
+        "Dean", 
+        "Exec", 
+        "Prof",
+        "Treas",
+        "Secretary",
+        "Chief",
+        "Dept Head"
+    ];
+    
+    for (let i = 0; i < list_of_titles.length; i++) {
+      if(t.includes(list_of_titles[i].toLowerCase())) {
+        tg = list_of_titles[i];
+        break;
+      }
+    }
+    return tg;
+
   }
 
 }
