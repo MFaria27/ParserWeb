@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "css-build": "node-sass --omit-source-map-url src/styles.scss src/styles.css"
   },
   "private": true,
   "dependencies": {
@@ -21,6 +22,8 @@
     "@angular/service-worker": "^16.2.0",
     "@types/axios": "^0.14.0",
     "axios": "^1.6.2",
+    "bulma": "^0.9.4",
+    "node-sass": "^9.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"

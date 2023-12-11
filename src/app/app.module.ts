@@ -7,11 +7,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { HomePageComponent } from './home-page/home-page.component';
+import { ExportPageComponent } from './export-page/export-page.component';
+import { VizPageComponent } from './viz-page/viz-page.component';
+import { FaqPageComponent } from './faq-page/faq-page.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomePageComponent
+    HomePageComponent,
+    ExportPageComponent,
+    VizPageComponent,
+    FaqPageComponent,
   ],
   imports: [
     BrowserModule,

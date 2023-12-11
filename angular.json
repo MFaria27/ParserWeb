@@ -91,7 +91,8 @@
               "src/manifest.webmanifest"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/bulma/css/bulma.min.css"
             ],
             "scripts": []
           }
