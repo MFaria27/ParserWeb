@@ -1,6 +1,12 @@
+#export-wrapper {
+    width: 100%;
+
+}
 #search-container {
     display: flex;
     justify-content: center;
+    float: left;
+    width: 70%;
 }
 
 .field-label {
@@ -16,4 +22,9 @@
 
 #search-input {
     width: 70%;
+}
+
+#selected-container {
+    width: 30%;
+    float: left;
 }
