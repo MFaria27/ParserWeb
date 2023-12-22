@@ -50,9 +50,6 @@ export class ExportPageComponent implements OnInit{
     var summary_worksheet = XLSX.utils.aoa_to_sheet(summary_sheet_payload);
     XLSX.utils.book_append_sheet(wb, summary_worksheet, "summary");
 
-    let occupation_sheet_payload : any = [
-      ["Year", "Name", "Title", "Title Group", "Base Compensation", "Other Compensation", "Total Compensation"]
-    ]
     let occupationPayload = {
       eins : this.selected_eins
     }
@@ -60,6 +57,9 @@ export class ExportPageComponent implements OnInit{
     .then(async (response:any) => {
       if(response["statusCode"] == 200) {
         this.selected_eins.forEach(ein => {
+          let occupation_sheet_payload : any = [
+            ["Year", "Name", "Title", "Title Group", "Base Compensation", "Other Compensation", "Total Compensation"]
+          ]
           response["body"].forEach(row => {
             if(row['ein'] == ein) {
               let add_to_payload = [
@@ -79,6 +79,10 @@ export class ExportPageComponent implements OnInit{
     });
 
     XLSX.writeFile(wb, this.filename);
+
+    this.selected_organizations.splice(0, this.selected_organizations.length);
+    this.selected_nicks.splice(0, this.selected_nicks.length);
+    this.selected_eins.splice(0, this.selected_eins.length);
   }
 
   async getAllOrganizations () {

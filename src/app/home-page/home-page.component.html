@@ -1,13 +1,68 @@
+<div id="home-wrapper">
+    <div class="columns">
+        <div class="column is-2"></div>
+        <div class="column is-5">
+            <div class="container" id="search-container">
+                <div class="field" id="search-field">
+                    <div class="field-label">
+                        <label class="label">College/University</label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field has-addons has-addons-centered">
+                            <div class="control" id="search-input">
+                                <input class="input is-primary is-rounded" type="text" placeholder="Massachusetts Institute of Technology" [(ngModel)]="org">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column is-3">
+            <div class="container" id="search-container">
+                <div class="field" id="search-field">
+                    <div class="field-label">
+                        <label class="label">College Nickname</label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field has-addons has-addons-centered">
+                            <div class="control" id="search-input">
+                                <input class="input is-primary is-rounded" type="text" placeholder="MIT" [(ngModel)]="nick">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column is-2"></div>
+    </div>
+    <div class="container is-flex is-justify-content-center">
+        <button class="button is-large" *ngIf="step1" (click)="step1=false; step2=true; addToDatabase()">
+            Add To Database
+        </button>
+        <article *ngIf="step2" class="message">
+            <div class="message-header"><p>Is this the correct title?</p></div>
+            <div class="message-body" *ngIf="!failed">
+                <h1 class="is-loading" style="display: flex; margin: auto; justify-content: center;">{{ searched_org }}</h1>
+                <div class="field is-grouped is-flex-direction-row">
+                    <p class="control m-0" style="width: 50%;"><button class="button is-fullwidth" (click)="step2=false; step3=true; onSuccessfulFind();">YES</button></p>
+                    <p class="control"     style="width: 50%;"><button class="button is-fullwidth" (click)="failed=true;">NO</button></p>
+                </div>
+            </div>
+            <div class="message-body is-flex is-justify-content-center is-flex-direction-column" *ngIf="failed">
+                <p>Please check the spelling of the organization or go to <a href="https://projects.propublica.org/nonprofits/" target="_blank"><strong>Propublica's Non-Profit Explorer</strong></a> and check to see if your query is the first search result</p>
+                <p>I.E: Looking up <a href="https://projects.propublica.org/nonprofits/search?q=Harvard" target="_blank"><strong>Harvard</strong></a>, the first result (and the one being read) is Harvard Management Private Equity Corporation, which is not the university</p>
+                <button class="button" (click)="reset()" style="display: flex; margin: auto;">Reset Search Page</button>
+            </div>
+        </article>
+        <article *ngIf="step3" class="message">
+            <div class="message-header"><p>Status</p></div>
+            <div class="message-body">
+                <p *ngFor="let status of status_messages">{{status}}</p>
+                <button class="button" *ngIf="complete" (click)="reset()" style="display: flex; margin: auto;">Reset Search Page</button>
+            </div>
+            
+        </article>
+    </div>
+</div>
 
-<h1>Add Ein Value to Database</h1>
-
-
-Organization: &nbsp; <input [(ngModel)]="org"/>
-Org Nickname: &nbsp; <input [(ngModel)]="nick"/>
-<br>
-Status: <p>{{status}}</p>
-<input type="button" value="Add" (click)="addToDatabase()">
-
-"organization": "Worcester Polytechnic Institute",
-"nickname": "WPI"
   

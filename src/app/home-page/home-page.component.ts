@@ -8,39 +8,50 @@ import { HttpServiceService } from '../services/http-service.service';
 })
 export class HomePageComponent {
   org;
+  searched_org = "loading...";
   nick;
+  ein;
   status = "";
+  failed = false;
+  step1 = true;
+  step2 = false;
+  step3 = false;
+  status_messages : string[] = [];
+  complete = false;
   
   constructor(private httpService: HttpServiceService) {}
+
+  reset() {
+    this.org = ""
+    this.searched_org = "loading...";
+    this.nick = "";
+    this.ein = 0;
+    this.status = "";
+    this.failed = false;
+    this.step1 = true;
+    this.step2 = false;
+    this.step3 = false;
+    this.status_messages = [];
+    this.complete = false;
+  }
   
-  addToDatabase() {
+  async addToDatabase() {
     let getEinCodePayload = {
       organization: this.org
     }
     this.httpService.postToAPI("/getEinCode", getEinCodePayload).subscribe(
       (response) => {
-        let einValue = response['body']
-        let postEinCodePayload = {
-          ein:          einValue,
-          organization: this.org,
-          nickname:     this.nick
+        this.ein = response['body']
+
+        let getTitlePayload = {
+          ein: this.ein
         }
-    
-        this.httpService.postToAPI("/postEinCode", postEinCodePayload).subscribe(
+
+        this.httpService.postToAPI("/getPropublicaTitle", getTitlePayload).subscribe(
           (response) => {
-            if (response['statusCode'] == 200){
-              this.status = this.org + " has been found and recorded";
-              this.getCollegeInfo(einValue);
-            } else if (response['statusCode'] == 300) {
-              this.status = this.org + " is already in the database";
-              this.getCollegeInfo(einValue);
-            } else {
-              this.status = this.org + " could not be found"
-            }
+            this.searched_org = response['body']
           },
-          (error) => {
-            console.log(error)
-          }
+          (error) => { console.log(error) }
         )
       },
       (error) => {
@@ -50,16 +61,63 @@ export class HomePageComponent {
     )
   }
 
+  async onBadFind() {
+    let deleteEinInfoPayload = {
+      ein: this.ein
+    }
+    this.httpService.postToAPI("/deleteEinInfo", deleteEinInfoPayload).subscribe(
+      (response) => {
+        if(response['statusCode'] == 200){
+          this.status = "Bad ein removed"
+        } else {
+          this.status = "Bad ein could not be removed"
+        }
+      },
+      (error) => { console.log(error) }
+    )
+
+  }
+
+  async onSuccessfulFind () {
+    let postEinCodePayload = {
+      ein:          this.ein,
+      organization: this.org,
+      nickname:     this.nick
+    }
+    
+    this.status_messages.push("Adding ein information to database...");
+    this.httpService.postToAPI("/postEinCode", postEinCodePayload).subscribe(
+      (response) => {
+        if (response['statusCode'] == 200){
+          this.status_messages.push("Adding college info...");
+          this.getCollegeInfo(this.ein);
+        } else if (response['statusCode'] == 300) {
+          this.status_messages.push("-> Info already recorded");
+          this.status_messages.push("Updating college info...");
+          this.getCollegeInfo(this.ein);
+        } else {
+          this.status_messages.push("Error occured adding ein info to database");
+        }
+      },
+      (error) => {
+        console.log(error)
+      }
+    )
+  }
+
   async getCollegeInfo (ein : number) {
     let getXMLLinksPayload = {
       ein: ein
     }
+    this.status_messages.push("Requesting XML links...")
     this.httpService.postToAPI("/getXMLLinks", getXMLLinksPayload).toPromise()
     .then(async (res : any) => {
+
       let xml_links = res["xml_links"]
       let num_links = res["num_links"] // Replace i < num_links
       let yearly_summary_data : any[] = [];
       let yearly_occupation_data : any[] = [];
+      this.status_messages.push("Getting summary and occupation data....")
       for(let i = 0; i < num_links; i++) {
         let getXMLContentPayload = {
           xml_link: xml_links[i]
@@ -88,13 +146,14 @@ export class HomePageComponent {
       // SELECT name, year, COUNT(*) FROM IRSInfo.Employees GROUP BY name, year HAVING COUNT(*) > 1;
       // For some reason some are duplicating, use this to debug
       // https://www.db-fiddle.com/f/b2sXP7rPxAFEUJ5QHJ9w4v/0
+      this.status_messages.push("Adding occupation data to database...")
       await this.httpService.postToAPI("/postOccupationInfo", getOccupationInfoPayload).toPromise()
       .then((res : any) => {
         if(res["statusCode"] == 200) {
-          console.log(res["body"]["added"] + " rows have been added to Employees")
+          this.status_messages.push("-> " + res["body"]["added"] + " rows have been added to Employees")
         }
         if(res["statusCode"] == 404) {
-          console.log("All rows in batch already in Employees")
+          this.status_messages.push("-> All rows in batch already in Employees")
         }
       })
       .catch(err => {
@@ -102,19 +161,22 @@ export class HomePageComponent {
         console.log(err)
       })
 
+      this.status_messages.push("Adding summary data to database");
       await this.httpService.postToAPI("/postSummaryData", getSummaryDataPayload).toPromise()
       .then((res : any) => {
         if(res["statusCode"] == 200) {
-          console.log(res["body"]["added"] + " rows have been added to Summary")
+          this.status_messages.push("-> " + res["body"]["added"] + " rows have been added to Summary")
         }
         if(res["statusCode"] == 404) {
-          console.log("All rows in batch already in Summary")
+          this.status_messages.push("-> All rows in batch already in Summary")
         }
       })
       .catch(err => {
         console.log(getSummaryDataPayload);
         console.log(err)
       })
+      this.status_messages.push("Successfully Added All College Info!");
+      this.complete = true;
     })
     .catch(err => {
       console.log(err)
@@ -208,17 +270,13 @@ export class HomePageComponent {
       pyNetRevenue = parseInt(pyNetRevenue, 10)
       let cyNetRevenue : any = xml.getElementsByTagName("CYRevenuesLessExpensesAmt").item(0)?.textContent
       cyNetRevenue = parseInt(cyNetRevenue, 10)
-      let average_comp_per_reported = 0
-      let net_over_comp_index = 0
-      try {
-        average_comp_per_reported = company_wide_compensation / total_reported_employees
-      } catch {
-        average_comp_per_reported = 0
-      }
-      try {
-        net_over_comp_index = cyNetRevenue / company_wide_compensation
-      } catch {
-        net_over_comp_index = 0
+      let average_comp_per_reported = company_wide_compensation / total_reported_employees
+      if (!isFinite(average_comp_per_reported)) average_comp_per_reported = 0;
+      let net_over_comp_index = cyNetRevenue / company_wide_compensation
+      if (!isFinite(net_over_comp_index)) net_over_comp_index = 0;
+
+      if(this.nick == "QCC") {
+        console.log(average_comp_per_reported + " " + net_over_comp_index)
       }
 
       let subPayloadSummaryData = {

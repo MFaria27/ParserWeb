@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 })
 export class HttpServiceService {
   
-  private IRS990API = 'https://x53hil3tx9.execute-api.us-east-2.amazonaws.com/testing';
+  private IRS990API = 'https://x53hil3tx9.execute-api.us-east-2.amazonaws.com/Prod';
 
   constructor(private http: HttpClient) { }
 
