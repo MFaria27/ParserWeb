@@ -10,6 +10,10 @@ export class HttpServiceService {
 
   constructor(private http: HttpClient) { }
 
+  getFromAPI(lambda : string) {
+    return this.http.get(this.IRS990API+lambda);
+  }
+
   postToAPI(lambda : string, payload){
     return this.http.post(this.IRS990API+lambda, JSON.stringify(payload));
   }

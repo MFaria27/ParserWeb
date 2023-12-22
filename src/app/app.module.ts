@@ -10,6 +10,7 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { ExportPageComponent } from './export-page/export-page.component';
 import { VizPageComponent } from './viz-page/viz-page.component';
 import { FaqPageComponent } from './faq-page/faq-page.component';
+import { IonicModule } from '@ionic/angular';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { FaqPageComponent } from './faq-page/faq-page.component';
       registrationStrategy: 'registerWhenStable:30000'
     }),
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    IonicModule.forRoot({})
   ],
   providers: [],
   bootstrap: [AppComponent]

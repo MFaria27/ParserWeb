@@ -1,24 +1,73 @@
 <div id="export-wrapper">
-    <div class="container" id="search-container">
-        <div class="field" id="search-field">
-            <div class="field-label">
-                <label class="label">College/University</label>
-            </div>
-            <div class="field-body">
-                <div class="field has-addons has-addons-centered">
-                    <div class="control" id="search-input">
-                        <input class="input is-primary is-rounded" type="text" placeholder="Massachusetts Institute of Technology">
+    <div class="columns" id="export-columns">
+        <div class="column" [ngClass]="selected_organizations.length > 0 ? 'is-four-fifths' : 'is-full'">
+            <div class="container">
+                <div class="container" id="search-container">
+                    <div class="field" id="search-field">
+                        <div class="field-label">
+                            <label class="label">College/University</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons has-addons-centered">
+                                <div class="control" id="search-input">
+                                    <input class="input is-primary is-rounded" type="text" placeholder="Massachusetts Institute of Technology">
+                                </div>
+                                <div class="control">
+                                    <a class="button is-primary is-rounded">
+                                        +
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="control">
-                        <a class="button is-primary is-rounded">
-                            +
-                        </a>
+                </div>
+                <div class="container p-1" style="display: flex; justify-content: center;">
+                    <div 
+                        class="button"
+                        (click)="card_view = !card_view"
+                    >Toggle Card View</div>
+                </div>
+                <div class="columns is-multiline m-1">
+                    <div 
+                        *ngFor="let org of all_organizations"
+                        class="column is-one-third"
+                        (click)="editSelected(org)"
+                    >
+                        <div 
+                            class="card is-clickable" 
+                            [style.background-color]="selected_organizations.includes(org) ? '#C9D5B5' : 'white'" 
+                            style="height: 100%;"
+                        >
+                            <div class="card-content" [ngClass]="!card_view ? 'p-0 is-flex is-justify-content-center' : ''">
+                                <h2 [style.color]="selected_organizations.includes(org) ? 'white' : 'black'">{{ org['nickname'] }}</h2>
+                                <h3 *ngIf="card_view" [style.color]="selected_organizations.includes(org) ? 'white' : 'black'">{{ org['organization'] }}</h3>
+                                <h4 *ngIf="card_view" [style.color]="selected_organizations.includes(org) ? 'white' : 'black'">{{ org['ein'] }}</h4>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="container" id="selected-container">
-    
+        <div class="column" [ngClass]="selected_organizations.length > 0 ? 'is-one-fifth' : 'is-hidden'">
+            <div class="container is-flex is-justify-content-flex-start is-flex-direction-column" id="selected-container">
+                <div 
+                    class="button m-2" 
+                    [style.background-color]="'#C9D5B5'"
+                    (click)="writeToExcel()"
+                >
+                    <strong>Generate Excel File</strong>
+                </div>
+                <div
+                    *ngFor="let org of selected_organizations" 
+                    class="card is-clickable"
+                    (click)="editSelected(org)"
+                >
+                    <div class="card-header">
+                        <p class="card-header-title">{{ org['nickname'] }}</p>
+                        <span class="icon is-large" style="display: flex; flex-direction: column; justify-content: center;"><ion-icon name="close-outline"></ion-icon></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

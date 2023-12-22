@@ -58,12 +58,63 @@ export class HomePageComponent {
     .then(async (res : any) => {
       let xml_links = res["xml_links"]
       let num_links = res["num_links"] // Replace i < num_links
+      let yearly_summary_data : any[] = [];
+      let yearly_occupation_data : any[] = [];
       for(let i = 0; i < num_links; i++) {
         let getXMLContentPayload = {
           xml_link: xml_links[i]
         }
-        await this.getXMLContent(ein, getXMLContentPayload)
+        let scrapped_data : {} = await this.getXMLContent(ein, getXMLContentPayload)
+        if(scrapped_data['sum'] != null) {
+          for(let i = 0; i < scrapped_data['sum'].length; i++){
+            yearly_summary_data.push(scrapped_data['sum'][i]);
+          }
+        }
+        if(scrapped_data['occ'] != null) {
+          for(let i = 0; i < scrapped_data['occ'].length; i++){
+            yearly_occupation_data.push(scrapped_data['occ'][i]);
+          }
+        }
       }
+
+      let getSummaryDataPayload = {
+        data: yearly_summary_data
+      }
+
+      let getOccupationInfoPayload = {
+        data: yearly_occupation_data
+      }
+
+      // SELECT name, year, COUNT(*) FROM IRSInfo.Employees GROUP BY name, year HAVING COUNT(*) > 1;
+      // For some reason some are duplicating, use this to debug
+      // https://www.db-fiddle.com/f/b2sXP7rPxAFEUJ5QHJ9w4v/0
+      await this.httpService.postToAPI("/postOccupationInfo", getOccupationInfoPayload).toPromise()
+      .then((res : any) => {
+        if(res["statusCode"] == 200) {
+          console.log(res["body"]["added"] + " rows have been added to Employees")
+        }
+        if(res["statusCode"] == 404) {
+          console.log("All rows in batch already in Employees")
+        }
+      })
+      .catch(err => {
+        console.log(getOccupationInfoPayload);
+        console.log(err)
+      })
+
+      await this.httpService.postToAPI("/postSummaryData", getSummaryDataPayload).toPromise()
+      .then((res : any) => {
+        if(res["statusCode"] == 200) {
+          console.log(res["body"]["added"] + " rows have been added to Summary")
+        }
+        if(res["statusCode"] == 404) {
+          console.log("All rows in batch already in Summary")
+        }
+      })
+      .catch(err => {
+        console.log(getSummaryDataPayload);
+        console.log(err)
+      })
     })
     .catch(err => {
       console.log(err)
@@ -71,6 +122,7 @@ export class HomePageComponent {
   }
 
   async getXMLContent (ein : number, getXMLContentPayload : any) {
+    let send : {} = {};
     await this.httpService.postToAPI("/getXMLContent", getXMLContentPayload).toPromise()
     .then(async (res : any) => {
       let xmlContent = res['body']
@@ -184,49 +236,16 @@ export class HomePageComponent {
       let summaryData : {}[] = [];
       summaryData.push(subPayloadSummaryData);
 
-      let getSummaryDataPayload = {
-        data: summaryData
-      }
-
-      let getOccupationInfoPayload = {
-        data: scrapped_occupation_data
-      }
-
-      // SELECT name, year, COUNT(*) FROM IRSInfo.Employees GROUP BY name, year HAVING COUNT(*) > 1;
-      // For some reason some are duplicating, use this to debug
-      // https://www.db-fiddle.com/f/b2sXP7rPxAFEUJ5QHJ9w4v/0
-      await this.httpService.postToAPI("/postOccupationInfo", getOccupationInfoPayload).toPromise()
-      .then((res : any) => {
-        if(res["statusCode"] == 200) {
-          console.log(res["body"]["added"] + " rows have been added to Employees")
-        }
-        if(res["statusCode"] == 404) {
-          console.log("All rows in batch already in Employees")
-        }
-      })
-      .catch(err => {
-        console.log(getOccupationInfoPayload);
-        console.log(err)
-      })
-
-      await this.httpService.postToAPI("/postSummaryData", getSummaryDataPayload).toPromise()
-      .then((res : any) => {
-        if(res["statusCode"] == 200) {
-          console.log(res["body"]["added"] + " rows have been added to Summary")
-        }
-        if(res["statusCode"] == 404) {
-          console.log("All rows in batch already in Summary")
-        }
-      })
-      .catch(err => {
-        console.log(getSummaryDataPayload);
-        console.log(err)
-      })
+      send = {
+        'sum': summaryData,
+        'occ': scrapped_occupation_data
+      };
 
     })
     .catch(err => {
       console.log(err)
     })
+    return send;
   }
 
   get_title_group(title_name : string) {
