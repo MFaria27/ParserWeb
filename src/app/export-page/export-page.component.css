@@ -2,6 +2,13 @@
     width: 100%;
 }
 
+#export-columns {
+    
+    overflow-y:scroll; 
+    position:relative;
+    height: 50vh;
+}
+
 #search-container {
     display: flex;
     justify-content: center;
@@ -29,4 +36,5 @@
     height: 100%;
     border-left: 5px solid #4E3D42;
     border-bottom: 5px solid #4E3D42;
+    overflow-y:auto; 
 }

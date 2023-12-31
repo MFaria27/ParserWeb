@@ -1,5 +1,5 @@
 <div id="export-wrapper">
-    <div class="columns" id="export-columns">
+    <div class="columns">
         <div class="column" [ngClass]="selected_organizations.length > 0 ? 'is-four-fifths' : 'is-full'">
             <div class="container">
                 <div class="container" id="search-container">
@@ -27,7 +27,7 @@
                         (click)="card_view = !card_view"
                     >Toggle Card View</div>
                 </div>
-                <div class="columns is-multiline m-1">
+                <div class="columns is-multiline m-1" id="export-columns">
                     <div 
                         *ngFor="let org of all_organizations"
                         class="column is-one-third"
