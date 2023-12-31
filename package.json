@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --base-href /ParserWeb/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "css-build": "node-sass --omit-source-map-url src/styles.scss src/styles.css"
