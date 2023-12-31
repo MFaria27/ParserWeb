@@ -24,7 +24,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo : '/search',
+    redirectTo : '/index.html',
     pathMatch : 'full',
   },
 ];
