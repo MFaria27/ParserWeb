@@ -10,7 +10,7 @@
                     <div class="field-body">
                         <div class="field has-addons has-addons-centered">
                             <div class="control" id="search-input">
-                                <input class="input is-primary is-rounded" type="text" placeholder="Massachusetts Institute of Technology" [(ngModel)]="org">
+                                <input class="input is-primary is-rounded" type="text" placeholder="Massachusetts Institute of Technology" [(ngModel)]="org" (ngModelChange)="checkIfAddEmpty()">
                             </div>
                         </div>
                     </div>
@@ -26,7 +26,7 @@
                     <div class="field-body">
                         <div class="field has-addons has-addons-centered">
                             <div class="control" id="search-input">
-                                <input class="input is-primary is-rounded" type="text" placeholder="MIT" [(ngModel)]="nick">
+                                <input class="input is-primary is-rounded" type="text" placeholder="MIT" [(ngModel)]="nick" (ngModelChange)="checkIfAddEmpty()">
                             </div>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
         <div class="column is-2"></div>
     </div>
     <div class="container is-flex is-justify-content-center">
-        <button class="button is-large" *ngIf="step1" (click)="step1=false; step2=true; addToDatabase()">
+        <button class="button is-large" *ngIf="step1" (click)="step1=false; step2=true; addToDatabase()" [disabled]="addIsEmpty">
             Add To Database
         </button>
         <article *ngIf="step2" class="message">
@@ -44,8 +44,8 @@
             <div class="message-body" *ngIf="!failed">
                 <h1 class="is-loading" style="display: flex; margin: auto; justify-content: center;">{{ searched_org }}</h1>
                 <div class="field is-grouped is-flex-direction-row">
-                    <p class="control m-0" style="width: 50%;"><button class="button is-fullwidth" (click)="step2=false; step3=true; onSuccessfulFind();">YES</button></p>
-                    <p class="control"     style="width: 50%;"><button class="button is-fullwidth" (click)="failed=true;">NO</button></p>
+                    <p class="control m-0" style="width: 50%;"><button class="button is-fullwidth" (click)="step2=false; step3=true; onSuccessfulFind();" [disabled]="searched_org=='loading...'">YES</button></p>
+                    <p class="control"     style="width: 50%;"><button class="button is-fullwidth" (click)="failed=true;" [disabled]="searched_org=='loading...'">NO</button></p>
                 </div>
             </div>
             <div class="message-body is-flex is-justify-content-center is-flex-direction-column" *ngIf="failed">

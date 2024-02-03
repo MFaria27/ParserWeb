@@ -13,6 +13,7 @@ export class HomePageComponent {
   ein;
   status = "";
   failed = false;
+  addIsEmpty = true;
   step1 = true;
   step2 = false;
   step3 = false;
@@ -28,11 +29,16 @@ export class HomePageComponent {
     this.ein = 0;
     this.status = "";
     this.failed = false;
+    this.addIsEmpty = true;
     this.step1 = true;
     this.step2 = false;
     this.step3 = false;
     this.status_messages = [];
     this.complete = false;
+  }
+
+  checkIfAddEmpty () {
+   this.addIsEmpty = ((this.org == "" || this.org == null) || (this.nick == "" || this.nick == null))
   }
   
   async addToDatabase() {
