@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && cpy index.html ../ --rename=404.html --cwd=docs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "css-build": "node-sass --omit-source-map-url src/styles.scss src/styles.css"
@@ -24,6 +24,7 @@
     "@types/axios": "^0.14.0",
     "axios": "^1.6.2",
     "bulma": "^0.9.4",
+    "cpy-cli": "^5.0.0",
     "file-saver": "^2.0.5",
     "node-sass": "^9.0.0",
     "rxjs": "~7.8.0",

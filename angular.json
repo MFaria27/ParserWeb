@@ -24,7 +24,6 @@
               "src/favicon.ico",
               "src/assets",
               "src/manifest.webmanifest",
-              "src/404.html",
               "src/CNAME",
               {
                 "glob": "**/*.svg",
